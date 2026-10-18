@@ -72,9 +72,10 @@ they are set. The verdict is the one `regression_test.sh` gives:
 The simulation itself is a cached build step. Rerunning a passing or a
 failing case costs nothing until an input changes.
 
-The board outputs land in `bazel-bin/example_demo/axku3/build/`. That is
-the bitstream, the routed checkpoint and the same reports that `make`
-writes.
+The board outputs land in `bazel-bin/example_demo/axku3/bitstream/build/`.
+That is the bitstream, the routed checkpoint and the same reports that
+`make` writes. The other two board targets write to a directory named
+after them.
 
 ### How Bazel gets Vivado
 

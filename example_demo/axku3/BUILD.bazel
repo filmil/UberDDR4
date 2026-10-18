@@ -1,5 +1,4 @@
-load("@rules_vivado//build/vivado:rules.bzl", "vivado_program_device")
-load("//tools:vivado.bzl", "vivado_tcl")
+load("//tools:vivado.bzl", "vivado_batch_binary", "vivado_tcl")
 
 filegroup(
     name = "srcs",
@@ -83,14 +82,16 @@ vivado_tcl(
     tclargs = ["synth"],
 )
 
-# `make program`: `bazel run //example_demo/axku3:program` programs the
-# first device on the JTAG chain, the board's xcku3p, with the bitstream.
-# Like program.tcl, this writes the device, not the configuration flash.
-vivado_program_device(
+# `make program`: `bazel run //example_demo/axku3:program` runs
+# program.tcl with the built bitstream, as `make program` does. Like it,
+# this writes the device, not the board's configuration flash.
+vivado_batch_binary(
     name = "program",
+    bitstream = ":bitstream",
+    log = "example_demo/axku3/build/program.log",
+    script = "program.tcl",
     tags = [
         "manual",
         "vivado",
     ],
-    deps = [":bitstream"],
 )
