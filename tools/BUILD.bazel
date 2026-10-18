@@ -27,7 +27,10 @@ filegroup(
     srcs = glob(["**"]),
 )
 
-exports_files(["xsim_check.sh"])
+exports_files([
+    "with_pty.py",
+    "xsim_check.sh",
+])
 
 sh_binary(
     name = "regression_row",

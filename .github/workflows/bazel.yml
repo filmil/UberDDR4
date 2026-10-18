@@ -1,7 +1,8 @@
 # Runs everything that needs no Vivado: lint, the compile checks, the
 # ASCII check and both formal suites, which is `run_compile.sh --all`
-# without its simulation stage. The Vivado targets are tagged `manual`, so
-# `bazel test //...` leaves them out; see docs/BAZEL.md.
+# without its simulation stage, and the Linux project's host tests. The
+# Vivado targets are tagged `manual`, so `bazel test //...` leaves them
+# out; see docs/BAZEL.md.
 name: Bazel
 
 on:

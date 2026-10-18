@@ -47,3 +47,56 @@ vivado.install(
     modules = ["Kintex UltraScale+"],
     urls = ["file:///data/tools/archives/FPGAs_AdaptiveSoCs_Unified_SDI_2025.2_1114_2157_1.tar"],
 )
+
+# projects/axku3_linux: its host-only tests (`uberddr4.sh test`), on a
+# Python of Bazel's own, with the Python packages and the LiteX sources
+# that dependencies.json pins.
+bazel_dep(name = "rules_python", version = "2.4.2")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.12",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "linux_pip",
+    python_version = "3.12",
+    requirements_lock = "//projects/axku3_linux/bazel:requirements_lock.txt",
+)
+use_repo(pip, "linux_pip")
+
+# The LiteX sources of dependencies.json, at the same commits. Each is a
+# plain Python package tree; tools/python_tree.BUILD makes it importable.
+http_archive(
+    name = "migen",
+    build_file = "//tools:python_tree.BUILD",
+    sha256 = "87b94d0c7eb2d253e356e2ac98a57cc12df57f53e7b7cf07df67974a2c2f0ad8",
+    strip_prefix = "migen",
+    urls = ["https://git.m-labs.hk/M-Labs/migen/archive/4c2ae8dfeea37f235b52acb8166f12acaaae4f7c.tar.gz"],
+)
+
+http_archive(
+    name = "litex",
+    build_file = "//tools:python_tree.BUILD",
+    sha256 = "a81ababf558c4a2b102543bf638512d7eac7383aad1390e4a53f11ae126225cd",
+    strip_prefix = "litex-8ae30928574e9b28e630473651d6b0e2b1cdcc77",
+    urls = ["https://github.com/enjoy-digital/litex/archive/8ae30928574e9b28e630473651d6b0e2b1cdcc77.tar.gz"],
+)
+
+http_archive(
+    name = "pythondata_cpu_vexriscv",
+    build_file = "//tools:python_tree.BUILD",
+    sha256 = "83ffd0ba29d3c30f4c7d96a18ac299f4fb1f06bdcb37b48cff23a94374ad113e",
+    strip_prefix = "pythondata-cpu-vexriscv-642ecfed1c84460555d6d803d660cc60cfc1ecb6",
+    urls = ["https://github.com/litex-hub/pythondata-cpu-vexriscv/archive/642ecfed1c84460555d6d803d660cc60cfc1ecb6.tar.gz"],
+)
+
+http_archive(
+    name = "pythondata_cpu_vexriscv_smp",
+    build_file = "//tools:python_tree.BUILD",
+    sha256 = "c2ffcb4044e08bf147a2778adc283885ac2f39d29c1af1aceef617c994bc15ab",
+    strip_prefix = "pythondata-cpu-vexriscv_smp-217d23d7e9ad5556c17a73dc6ffc1971765f3d7c",
+    urls = ["https://github.com/litex-hub/pythondata-cpu-vexriscv_smp/archive/217d23d7e9ad5556c17a73dc6ffc1971765f3d7c.tar.gz"],
+)

@@ -19,8 +19,8 @@ root:
 bazel test //...
 ```
 
-That runs lint, the compile checks, the ASCII check, and both formal suites,
-34 tasks in all. On the first run, Bazel downloads one dated OSS CAD Suite
+That runs lint, the compile checks, the ASCII check, both formal suites (34
+tasks in all), and the Linux project's host tests. On the first run, Bazel downloads one dated OSS CAD Suite
 release, about 750 MB, which is pinned by checksum in `MODULE.bazel`. It
 provides Verilator, Icarus Verilog, Yosys, SymbiYosys and its solvers. The
 only thing taken from the machine is Perl, which Verilator's front end needs.
@@ -105,8 +105,26 @@ Use the path that `XILINX_VIVADO` would have. The
 [rules_vivado toolchain guide](https://github.com/filmil/bazel_rules_vivado/blob/main/docs/vivado-toolchain.md)
 covers the other modes, Docker among them.
 
-## Not covered
+## The Linux project
 
-`projects/axku3_linux/` builds a LiteX SoC with its own Python tools and
-its own dependency list in `dependencies.json`. It is not built with Bazel
-yet.
+`bazel test //projects/axku3_linux:test` runs `uberddr4.sh test`, the
+project's host-only tests, and it is part of `bazel test //...`. Bazel
+supplies all of it:
+- Python 3.12, from rules_python;
+- the Python packages of `dependencies.json`, at its versions, and pinned
+  by hash in `projects/axku3_linux/bazel/requirements_lock.txt`;
+- Migen, LiteX and the two VexRiscv data packages, at the commits that
+  `dependencies.json` names.
+
+LiteX also imports `packaging`, which `dependencies.json` leaves to the
+machine, so the lock file adds it. A few tests build LiteX's serial
+terminal, which needs a terminal on standard input. `tools/with_pty.py`
+gives them a pseudo-terminal.
+
+The project's other commands are not built with Bazel yet: `setup`,
+`build`, `payload`, `implement`, `boot`, `campaign` and `console`.
+They generate the SoC and its BIOS with a RISC-V GCC, implement it with
+Vivado, and boot Linux on the board over its UART. The GCC that
+`dependencies.json` pins is a Windows build, and `uberddr4.sh` names
+Windows as the host it is tested on. Run them with `uberddr4.sh`, as
+before.
