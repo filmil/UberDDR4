@@ -1,0 +1,45 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "oss_cad_suite.BUILD",
+    "eda_test.sh",
+])
+
+# The Xilinx primitive stubs that `run_compile.sh` writes for lint and the
+# compile checks. They are cut from that script at build time, so the
+# script stays their single source.
+genrule(
+    name = "xilinx_stubs",
+    srcs = ["//:run_compile.sh"],
+    outs = ["xilinx_stubs.v"],
+    cmd = "sed -n \"/<< 'STUBS'/,/^STUBS$$/p\" $< | sed '1d;$$d' > $@ && test -s $@",
+)
+
+sh_binary(
+    name = "eda_test",
+    srcs = ["eda_test.sh"],
+)
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+exports_files(["xsim_check.sh"])
+
+sh_binary(
+    name = "regression_row",
+    srcs = ["regression_row.sh"],
+)
+
+sh_binary(
+    name = "xsim_run",
+    srcs = ["xsim_run.sh"],
+)
+
+sh_binary(
+    name = "vivado_tcl_run",
+    srcs = ["vivado_tcl_run.sh"],
+)

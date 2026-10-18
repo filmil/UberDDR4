@@ -1,0 +1,59 @@
+load("//tools:eda.bzl", "sby_tests")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+# What the [files] section of both .sby files names.
+FORMAL_SRCS = [
+    "//rtl:ddr4_controller.v",
+    "ddr4_controller_formal.vh",
+    "fwb_slave.v",
+    "mini_fifo.v",
+    "f_addr_decode.v",
+]
+
+# `run_compile.sh --formal`: the four tasks of ddr4_singleconfig.sby.
+sby_tests(
+    name = "single",
+    bounded = [
+        "prove_map0_bounded",
+        "prove_map1_bounded",
+    ],
+    sby_file = "ddr4_singleconfig.sby",
+    srcs = FORMAL_SRCS,
+    tasks = [
+        "prove_map0",
+        "prove_map1",
+        "prove_map0_bounded",
+        "prove_map1_bounded",
+    ],
+)
+
+# `run_compile.sh --formal-regr`: the thirty tasks of ddr4_multiconfig.sby.
+sby_tests(
+    name = "multi",
+    bounded = [
+        "ddr4_1600_x8_map1_bounded",
+        "ddr4_2400_x8_map1_bounded",
+        "ddr4_2400_x16_map1_bounded",
+        "ddr4_1600_x16_map0_bounded",
+    ],
+    sby_file = "ddr4_multiconfig.sby",
+    srcs = FORMAL_SRCS,
+    tasks = [
+        "ddr4_{}_x{}_map{}".format(rate, width, mapping)
+        for rate in [1600, 1866, 2133, 2400]
+        for width in [4, 8, 16]
+        for mapping in [0, 1]
+    ] + [
+        "ddr4_1600_x8_map1_bounded",
+        "ddr4_2400_x8_map1_bounded",
+        "ddr4_2400_x16_map1_bounded",
+        "ddr4_1600_x16_map0_bounded",
+        "ddr4_2400_x8_row14_map1",
+        "ddr4_2400_x8_row17_map1",
+    ],
+)

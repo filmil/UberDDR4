@@ -54,3 +54,7 @@ doc/
 # OS
 .DS_Store
 Thumbs.db
+
+# Bazel
+/bazel-*
+user.bazelrc

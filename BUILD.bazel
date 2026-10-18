@@ -1,0 +1,45 @@
+load("//tools:eda.bzl", "ascii_test")
+
+exports_files(["run_compile.sh"])
+
+# Every file in this package. Each package below has its own `srcs`
+# filegroup, and `ascii` reads them all.
+filegroup(
+    name = "srcs",
+    srcs = glob(
+        ["*"],
+        exclude = [
+            "MODULE.bazel.lock",
+            "bazel-*",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+# run_compile.sh's lint stage also requires every tracked source to be
+# plain ASCII, so that no editor or script can misread its encoding.
+ascii_test(
+    name = "ascii",
+    srcs = [
+        ":srcs",
+        "//docs:srcs",
+        "//example_demo/axku3:srcs",
+        "//formal:srcs",
+        "//projects/axku3_linux:srcs",
+        "//rtl:srcs",
+        "//testbench:srcs",
+        "//tools:srcs",
+    ],
+)
+
+# `bazel test //:no_sim` is `run_compile.sh --no-sim`: lint, compile and
+# the four single-configuration formal tasks.
+test_suite(
+    name = "no_sim",
+    tests = [
+        ":ascii",
+        "//formal:single",
+        "//rtl:compile",
+        "//rtl:lint",
+    ],
+)

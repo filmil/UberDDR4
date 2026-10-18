@@ -1,0 +1,14 @@
+common --registry=https://raw.githubusercontent.com/filmil/bazel-registry/main
+common --registry=https://bcr.bazel.build
+
+# Test output on failure, so a failing check shows its tool log.
+test --test_output=errors
+
+# Vivado from the Bazel-installed toolchain; see MODULE.bazel and
+# docs/BAZEL.md. Only the targets tagged `vivado` use it.
+build --@rules_vivado//:vivado_mode=hermetic
+
+# What is true of one machine rather than of the project (another Vivado,
+# another archive location) goes in user.bazelrc, which is not committed.
+# It is read last, so a `build` line there wins over the one above.
+try-import %workspace%/user.bazelrc

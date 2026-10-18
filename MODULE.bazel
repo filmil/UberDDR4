@@ -1,0 +1,49 @@
+"""UberDDR4: an open-source DDR4 controller and PHY, built with Bazel.
+
+Everything `run_compile.sh` does without Vivado (lint, compile checks and
+formal) runs here from tools that Bazel downloads itself, pinned by
+checksum, so a checkout needs nothing installed but Bazel. The Vivado
+steps (XSim simulation and the AXKU3 bitstream) are separate targets
+tagged `manual`; see docs/BAZEL.md.
+"""
+
+module(
+    name = "uberddr4",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_shell", version = "0.8.0")
+
+# The open-source EDA tools: Verilator, Icarus Verilog, Yosys, SymbiYosys
+# and its solvers, all from one dated OSS CAD Suite release. One archive
+# keeps the tools at versions that were built and tested together, and
+# releases stay downloadable, so the pin does not rot. The archive's own
+# environment script is not used; tools/oss_cad_suite.BUILD exposes the
+# wrapper scripts in bin/, which find their libraries relative to
+# themselves.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "oss_cad_suite",
+    build_file = "//tools:oss_cad_suite.BUILD",
+    sha256 = "639c8c0366d74dc56201729c9907bf2d8281db7f18bb025abe2e4f3f2ebaa24e",
+    strip_prefix = "oss-cad-suite",
+    urls = ["https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2026-10-18/oss-cad-suite-linux-x64-20261018.tgz"],
+)
+
+# Vivado, for XSim and the AXKU3 bitstream. By default rules_vivado
+# installs it itself from the AMD installer archive below, with only the
+# Kintex UltraScale+ device family that the AXKU3's xcku3p carries; the
+# simulation needs no more than the DDR4 IP and the UNISIM models that
+# come with any family. AMD's download needs a login, so the archive is
+# read from a local path: put it there, or point the URL at your copy in
+# user.bazelrc. docs/BAZEL.md has the details and the other ways to
+# supply Vivado.
+bazel_dep(name = "rules_vivado", version = "4.1.1")
+
+vivado = use_extension("@rules_vivado//:extensions.bzl", "vivado")
+vivado.install(
+    install_cache = "/data/cache/vivado-install",
+    modules = ["Kintex UltraScale+"],
+    urls = ["file:///data/tools/archives/FPGAs_AdaptiveSoCs_Unified_SDI_2025.2_1114_2157_1.tar"],
+)
