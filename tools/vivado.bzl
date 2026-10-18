@@ -174,14 +174,9 @@ def xsim_test(name, case, phy_impl = "component", tags = []):
         name = name,
         size = "enormous",
         srcs = ["//tools:xsim_check.sh"],
-        args = [
-            "$(rootpath {}_run.log)".format(name),
-            "$(rootpath {}_run.status)".format(name),
-        ],
-        data = [
-            name + "_run.log",
-            name + "_run.status",
-        ],
+        # The run's outputs, in order: the log, then the status.
+        args = ["$(rootpaths :{}_run)".format(name)],
+        data = [":{}_run".format(name)],
         tags = all_tags,
     )
 
