@@ -21,7 +21,8 @@ bazel test //...
 
 That runs lint, the compile checks, the ASCII check, both formal suites (34
 tasks in all), and the Linux project's host tests. On the first run, Bazel downloads one dated OSS CAD Suite
-release, about 750 MB, which is pinned by checksum in `MODULE.bazel`. It
+release, about 750 MB, which is pinned by checksum in `MODULE.bazel`. It is
+the Linux x86-64 build, so that is the host this needs, as Vivado does. It
 provides Verilator, Icarus Verilog, Yosys, SymbiYosys and its solvers. The
 only thing taken from the machine is Perl, which Verilator's front end needs.
 
@@ -89,7 +90,14 @@ install needs about 300 GB free while it runs and takes a couple of hours.
 
 AMD's download needs a login, so Bazel cannot fetch the archive. Download it
 once and either put it at the path `MODULE.bazel` names, or name your own
-path. The Micron DDR4 model comes from the installation's DDR4 IP, as
+path in `user.bazelrc`:
+
+```
+common --repo_env=VIVADO_INSTALLER_URL=file:///home/me/Downloads/FPGAs_AdaptiveSoCs_Unified_SDI_2025.2_1114_2157_1.tar
+```
+
+The installation itself goes in the `install_cache` directory that
+`MODULE.bazel` names; change it there if that path does not suit. The Micron DDR4 model comes from the installation's DDR4 IP, as
 `setup_micron_model.sh` takes it. This repository does not redistribute it.
 
 If Vivado is already installed, use it instead. Put these lines in

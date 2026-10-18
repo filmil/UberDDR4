@@ -23,4 +23,5 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
       - name: Test
-        run: bazel test //...
+        # A MODULE.bazel.lock that no longer matches MODULE.bazel fails here.
+        run: bazel test --lockfile_mode=error //...

@@ -36,9 +36,12 @@ http_archive(
 # Kintex UltraScale+ device family that the AXKU3's xcku3p carries; the
 # simulation needs no more than the DDR4 IP and the UNISIM models that
 # come with any family. AMD's download needs a login, so the archive is
-# read from a local path: put it there, or point the URL at your copy in
-# user.bazelrc. docs/BAZEL.md has the details and the other ways to
-# supply Vivado.
+# read from a local path: put it there, or name your copy with
+# `--repo_env=VIVADO_INSTALLER_URL=file:///...` in user.bazelrc, which
+# overrides `urls`. There is no `sha256`, so that the cache key is the URL
+# and the selection alone, and a machine that already holds this
+# installation for another workspace reuses it. docs/BAZEL.md has the
+# details and the other ways to supply Vivado.
 bazel_dep(name = "rules_vivado", version = "4.1.1")
 
 vivado = use_extension("@rules_vivado//:extensions.bzl", "vivado")

@@ -2,15 +2,16 @@ load("//tools:eda.bzl", "ascii_test")
 
 exports_files(["run_compile.sh"])
 
-# Every file in this package. Each package below has its own `srcs`
-# filegroup, and `ascii` reads them all.
+# Every file in this package, dotfiles and .github/ included. Each package
+# below has its own `srcs` filegroup, and `ascii` reads them all.
 filegroup(
     name = "srcs",
     srcs = glob(
-        ["*"],
+        ["**"],
         exclude = [
-            "MODULE.bazel.lock",
-            "bazel-*",
+            ".git/**",
+            "bazel-*/**",
+            "user.bazelrc",
         ],
     ),
     visibility = ["//visibility:public"],
@@ -26,6 +27,7 @@ ascii_test(
         "//example_demo/axku3:srcs",
         "//formal:srcs",
         "//projects/axku3_linux:srcs",
+        "//projects/axku3_linux/bazel:srcs",
         "//rtl:srcs",
         "//testbench:srcs",
         "//tools:srcs",
