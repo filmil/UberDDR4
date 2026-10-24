@@ -1,0 +1,97 @@
+load("//tools:vivado.bzl", "vivado_batch_binary", "vivado_tcl")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+# What build.tcl reads, at the paths it reads them from.
+filegroup(
+    name = "build_srcs",
+    srcs = [
+        "axku3_uberddr4.v",
+        "axku3_uberddr4.xdc",
+        "build.tcl",
+        "//rtl:core",
+        "//rtl:native_phy",
+    ],
+)
+
+# The reports build.tcl writes in build/ for both runs.
+_SYNTH_REPORTS = [
+    "build/post_synth_utilization.rpt",
+    "build/post_synth_timing.rpt",
+]
+
+_ROUTE_REPORTS = [
+    "build/post_route_utilization.rpt",
+    "build/post_route_clock_utilization.rpt",
+    "build/post_route_timing.rpt",
+    "build/post_route_drc.rpt",
+    "build/post_route_cdc.rpt",
+]
+
+# `make`: synthesis, implementation, the timing gate and the bitstream.
+vivado_tcl(
+    name = "bitstream",
+    srcs = [":build_srcs"],
+    bitstream = "build/axku3_uberddr4.bit",
+    dir = "example_demo/axku3",
+    outs = [
+        "build/axku3_uberddr4.bit",
+        "build/post_route.dcp",
+    ] + _SYNTH_REPORTS + _ROUTE_REPORTS,
+    script = "build.tcl",
+    tags = [
+        "manual",
+        "vivado",
+    ],
+)
+
+# `make ALLOW_FAILING_TIMING=1`: a bitstream even when routed timing
+# fails, for debugging only.
+vivado_tcl(
+    name = "bitstream_allow_failing_timing",
+    srcs = [":build_srcs"],
+    bitstream = "build/axku3_uberddr4.bit",
+    dir = "example_demo/axku3",
+    outs = [
+        "build/axku3_uberddr4.bit",
+        "build/post_route.dcp",
+    ] + _SYNTH_REPORTS + _ROUTE_REPORTS,
+    script = "build.tcl",
+    tags = [
+        "manual",
+        "vivado",
+    ],
+    tclargs = ["allow-failing-timing"],
+)
+
+# `make synth`: stop after synthesis and its reports.
+vivado_tcl(
+    name = "synth",
+    srcs = [":build_srcs"],
+    dir = "example_demo/axku3",
+    outs = ["build/post_synth.dcp"] + _SYNTH_REPORTS,
+    script = "build.tcl",
+    tags = [
+        "manual",
+        "vivado",
+    ],
+    tclargs = ["synth"],
+)
+
+# `make program`: `bazel run //example_demo/axku3:program` runs
+# program.tcl with the built bitstream, as `make program` does. Like it,
+# this writes the device, not the board's configuration flash.
+vivado_batch_binary(
+    name = "program",
+    bitstream = ":bitstream",
+    log = "example_demo/axku3/build/program.log",
+    script = "program.tcl",
+    tags = [
+        "manual",
+        "vivado",
+    ],
+)

@@ -81,6 +81,10 @@ bash run_compile.sh --sim baseline
 
 The Micron model is taken from your Vivado installation and is not bundled on this repository.
 
+Every check above, and the AXKU3 bitstream, can also run under Bazel, which
+fetches the open-source tools itself: `bazel test //...` runs everything that
+needs no Vivado. See [Building and verifying with Bazel](docs/BAZEL.md).
+
 ## Repository map
 
 | Path | Contents |
@@ -96,6 +100,7 @@ The Micron model is taken from your Vivado installation and is not bundled on th
 | `example_demo/axku3/` | Native-PHY BIST/LED board example, XDC and board testbench |
 | `projects/axku3_linux/` | LiteX/VexRiscv Linux integration, host tools and evidence |
 | `docs/` | Integration, architecture, verification, debug and reference guides |
+| `tools/`, `MODULE.bazel`, `BUILD.bazel` files | The Bazel build; see [docs/BAZEL.md](docs/BAZEL.md) |
 
 
 ## License and references

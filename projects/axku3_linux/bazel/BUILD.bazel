@@ -1,0 +1,7 @@
+exports_files(["requirements_lock.txt"])
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)

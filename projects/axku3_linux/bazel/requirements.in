@@ -1,0 +1,9 @@
+# The python_packages of ../dependencies.json, at the same versions.
+pyserial==3.5
+colorama==0.4.6
+requests==2.32.5
+PyYAML==6.0.2
+# Its fdt entry: the device-tree library prepare_linux_payload.py uses.
+fdt==0.3.3
+# LiteX imports it, and dependencies.json leaves it to the host.
+packaging

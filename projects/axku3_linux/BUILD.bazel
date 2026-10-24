@@ -1,0 +1,72 @@
+load("@linux_pip//:requirements.bzl", "requirement")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "axku3_linux",
+    srcs = glob(
+        ["*.py"],
+        exclude = ["test_*.py"],
+    ),
+    data = glob(["constraints/**"]) + [
+        "dependencies.json",
+        "linux_hardware_trials.tcl",
+    ],
+    imports = ["."],
+    deps = [
+        requirement("colorama"),
+        requirement("fdt"),
+        requirement("packaging"),
+        requirement("pyserial"),
+        requirement("pyyaml"),
+        requirement("requests"),
+        "@litex//:lib",
+        "@migen//:lib",
+        "@pythondata_cpu_vexriscv//:lib",
+        "@pythondata_cpu_vexriscv_smp//:lib",
+    ],
+)
+
+# `uberddr4.sh test`, its two halves. They run from the repository root,
+# as that command runs them, and read the RTL and this directory's own
+# files, uberddr4.sh among them, from there.
+py_test(
+    name = "test_setup",
+    srcs = ["test_setup.py"],
+    data = [
+        ":srcs",
+        "//rtl:srcs",
+    ],
+    deps = [":axku3_linux"],
+)
+
+# Some of these tests build LiteX's serial terminal, which wants a
+# terminal on standard input; with_pty.py gives it one.
+py_test(
+    name = "test_target",
+    srcs = [
+        "test_target.py",
+        "//tools:with_pty.py",
+    ],
+    args = ["$(rootpath test_target.py)"],
+    data = [
+        ":srcs",
+        "//rtl:srcs",
+    ],
+    main = "//tools:with_pty.py",
+    deps = [":axku3_linux"],
+)
+
+test_suite(
+    name = "test",
+    tests = [
+        ":test_setup",
+        ":test_target",
+    ],
+)

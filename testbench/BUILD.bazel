@@ -1,0 +1,101 @@
+load("@rules_vivado//build/vivado:rules.bzl", "vivado_extract")
+load("//tools:vivado.bzl", "MICRON_MODEL_DIR", "MICRON_MODEL_FILES", "xsim_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["regression_test.sh"])
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+# What testbench/run_xsim.sh reads from the repository.
+filegroup(
+    name = "sim_srcs",
+    srcs = [
+        "ddr4_sim_top.sv",
+        "micron/ddr4_sdram_model_wrapper.sv",
+        "run_xsim.sh",
+        "xsim_batch.tcl",
+        "//rtl:core",
+        "//rtl:native_phy",
+    ],
+)
+
+# testbench/setup_micron_model.sh's job: the Micron DDR4 model, from the
+# Vivado installation, which this repository does not redistribute.
+vivado_extract(
+    name = "micron_model",
+    files = {
+        "micron_model/" + f: MICRON_MODEL_DIR + "/" + f
+        for f in MICRON_MODEL_FILES
+    },
+    tags = [
+        "manual",
+        "vivado",
+    ],
+)
+
+# The ALL_TESTS table of regression_test.sh, by name. The parameters of
+# each case are read from that table at build time.
+CASES = [
+    "baseline",
+    "flyby_50",
+    "flyby_100",
+    "flyby_200",
+    "flyby_300",
+    "flyby_400",
+    "map0",
+    "map0_flyby_200",
+    "bist_full",
+    "x16",
+    "x16_map0",
+    "x16_bist_full",
+    "x16_flyby_4lane",
+    "x4",
+    "x4_map0",
+    "ddr4_1250",
+    "ddr4_1600",
+    "ddr4_1600_flyby",
+    "ddr4_2133",
+    "ddr4_2133_flyby",
+    "density_4g",
+    "row_bits_14",
+    "row_bits_17",
+    "train_fail",
+    "csr_reset",
+    "dm_stress",
+]
+
+# `run_compile.sh --sim <case>` is `bazel test //testbench:sim_<case>`,
+# and PHY_IMPL=native is `//testbench:sim_native_<case>`.
+[
+    xsim_test(
+        name = "sim_" + case,
+        case = case,
+    )
+    for case in CASES
+]
+
+[
+    xsim_test(
+        name = "sim_native_" + case,
+        case = case,
+        phy_impl = "native",
+    )
+    for case in CASES
+]
+
+# `run_compile.sh --sim-regr`, and its PHY_IMPL=native form.
+test_suite(
+    name = "sim_regression",
+    tags = ["manual"],
+    tests = ["sim_" + case for case in CASES],
+)
+
+test_suite(
+    name = "sim_native_regression",
+    tags = ["manual"],
+    tests = ["sim_native_" + case for case in CASES],
+)

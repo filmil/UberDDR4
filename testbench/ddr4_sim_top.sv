@@ -172,11 +172,14 @@ module ddr4_sim_top;
 
     import arch_package::*;
 
+    // Typed, because the Micron model's CONFIGURED_DENSITY is a
+    // UTYPE_density. Vivado 2025.2 takes an untyped localparam as an int
+    // and refuses to pass it to that parameter (VRFC 10-2649).
 `ifdef SIM_DENSITY_4G
-    localparam TB_DENSITY = _4G;
+    localparam UTYPE_density TB_DENSITY = _4G;
     localparam TB_DENSITY_GB = 4;
 `else
-    localparam TB_DENSITY = _8G;
+    localparam UTYPE_density TB_DENSITY = _8G;
     localparam TB_DENSITY_GB = 8;
 `endif
 

@@ -1,0 +1,91 @@
+load("//tools:eda.bzl", "iverilog_compile_test", "verilator_lint_test", "yosys_check_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob([
+    "*.v",
+    "axi/*.v",
+    "phy/*.v",
+]))
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+# run_compile.sh's RTL_CORE: the component-PHY source set that lint and
+# the compile checks use. The order is the order the tools read them in.
+CORE = [
+    "ddr4_controller.v",
+    "ddr4_phy.v",
+    "ddr4_prober.v",
+    "ddr4_top.v",
+]
+
+# The native PHY, which simulation and the board build add to CORE.
+NATIVE_PHY = [
+    "phy/ddr4_phy_native_reset.v",
+    "phy/ddr4_phy_native_byte.v",
+    "phy/ddr4_phy_native.v",
+    "phy/ddr4_phy_native_adapter.v",
+]
+
+filegroup(
+    name = "core",
+    srcs = CORE,
+)
+
+filegroup(
+    name = "native_phy",
+    srcs = NATIVE_PHY,
+)
+
+# run_compile.sh's RTL_AXI.
+filegroup(
+    name = "axi",
+    srcs = [
+        "axi/ddr4_top_axi.v",
+        "axi/axim2wbsp.v",
+        "axi/aximrd2wbsp.v",
+        "axi/aximwr2wbsp.v",
+        "axi/axi_addr.v",
+        "axi/skidbuffer.v",
+        "axi/sfifo.v",
+        "axi/wbarbiter.v",
+    ],
+)
+
+# Lint stage: each core module on its own, and ddr4_top over the whole set.
+[
+    verilator_lint_test(
+        name = "lint_" + src[:-len(".v")],
+        top = src[:-len(".v")],
+        srcs = CORE if src == "ddr4_top.v" else [src],
+    )
+    for src in CORE
+]
+
+test_suite(
+    name = "lint",
+    tests = ["lint_" + src[:-len(".v")] for src in CORE],
+)
+
+# Compile stage.
+iverilog_compile_test(
+    name = "compile_iverilog",
+    srcs = CORE,
+)
+
+yosys_check_test(
+    name = "compile_yosys",
+    top = "ddr4_top",
+    srcs = CORE,
+)
+
+test_suite(
+    name = "compile",
+    tests = [
+        ":compile_iverilog",
+        ":compile_yosys",
+    ],
+)
